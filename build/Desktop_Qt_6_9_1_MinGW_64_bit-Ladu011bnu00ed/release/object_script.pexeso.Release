@@ -1,0 +1,10 @@
+release/gameboard.o
+release/main.o
+release/mainscreen.o
+release/mainwindow.o
+release/pexeso.o
+release/rungame.o
+release/qrc_resources.o
+release/moc_mainscreen.o
+release/moc_mainwindow.o
+release/moc_rungame.o
