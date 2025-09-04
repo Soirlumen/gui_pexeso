@@ -23,8 +23,8 @@ void MainScreen::setupWindow()
 
 void MainScreen::setupConnect()
 {
-    connect(btnStartNewGame, &QPushButton::clicked,
-            this, &MainScreen::clickedStartNewGame);
-
-
+    connect(btnStartNewGame, &QPushButton::clicked, this, &MainScreen::clickedStartNewGame);
+    connect(btnStartExistingGame, &QPushButton::clicked, this, &MainScreen::clickedStartExistingGame);
+    connect(btnSettings, &QPushButton::clicked, this, &MainScreen::clickedSettings);
+    connect(btnQuit, &QPushButton::clicked, this, &MainScreen::clickedQuit);
 }

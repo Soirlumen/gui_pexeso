@@ -5,13 +5,20 @@
 #include <QObject>
 #include "mainscreen.h"
 #include "rungame.h"
+
+
 class QStackedWidget;
+class QString;
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
     QStackedWidget *stack;
     MainScreen *mscreen;
     runGame* rGame;
+
+    QString workdir;
 
 public:
     MainWindow(QWidget *parent = nullptr);

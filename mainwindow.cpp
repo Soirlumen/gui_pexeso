@@ -3,6 +3,8 @@
 #include <QString>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QFileDialog>
+#include <QFileInfo>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,8 +25,10 @@ void MainWindow::setupThingy()
     stack->setCurrentIndex(0);
 
 
-    connect(mscreen, &MainScreen::clickedStartNewGame,
-            this, &MainWindow::startNewGame);
+    connect(mscreen, &MainScreen::clickedStartNewGame, this, &MainWindow::startNewGame);
+    connect(mscreen, &MainScreen::clickedStartExistingGame, this, &MainWindow::startExistingGame);
+    connect(mscreen, &MainScreen::clickedSettings, this, &MainWindow::openSettings);
+    connect(rGame, &runGame::clickedBackToMenu, this, &MainWindow::backToMenu);
 
 }
 
@@ -36,7 +40,15 @@ void MainWindow::startNewGame()
 
 void MainWindow::startExistingGame()
 {
-
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    workdir,
+                                                    tr("Plain text (*.txt)"));
+    if (!fileName.isEmpty())
+    {
+        QFileInfo info(fileName);
+        workdir = info.absoluteDir().absolutePath();
+        //loadGame(read_file2(fileName), symbolforlivecell);
+    }
 }
 
 void MainWindow::openSettings()
@@ -46,7 +58,7 @@ void MainWindow::openSettings()
 
 void MainWindow::backToMenu()
 {
-
+stack->setCurrentIndex(0);
 }
 
 void MainWindow::closeEvent(QCloseEvent *evt)
