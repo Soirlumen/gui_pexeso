@@ -39,6 +39,7 @@ public:
     Str getWhereObraski() const;
     unsigned int getNumberOfPairs() const;
     Gameboard(const Str &_wo, unsigned int _nop);
+    Gameboard(const QStringList &list,unsigned int _nop);
     ~Gameboard();
     const vector_of_cards& getDeck() const;
     vector_of_cards& getDeck();

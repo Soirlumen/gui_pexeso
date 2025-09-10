@@ -9,7 +9,7 @@ class MainScreen : public QWidget
 {
 Q_OBJECT
     QPushButton* btnStartNewGame;
-    QPushButton* btnStartExistingGame;
+    //QPushButton* btnStartExistingGame;
     QPushButton* btnSettings;
     QPushButton* btnQuit;
     QVBoxLayout* lmaoyout;
@@ -22,7 +22,7 @@ public:
 
 signals:
     void clickedStartNewGame();
-    void clickedStartExistingGame();
+    //void clickedStartExistingGame();
     void clickedSettings();
     void clickedQuit();
 public slots:

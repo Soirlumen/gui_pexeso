@@ -26,9 +26,10 @@ void MainWindow::setupThingy()
 
 
     connect(mscreen, &MainScreen::clickedStartNewGame, this, &MainWindow::startNewGame);
-    connect(mscreen, &MainScreen::clickedStartExistingGame, this, &MainWindow::startExistingGame);
+    //connect(mscreen, &MainScreen::clickedStartExistingGame, this, &MainWindow::startExistingGame);
     connect(mscreen, &MainScreen::clickedSettings, this, &MainWindow::openSettings);
     connect(rGame, &runGame::clickedBackToMenu, this, &MainWindow::backToMenu);
+    connect(mscreen, &MainScreen::clickedQuit, this, &QWidget::close);
 
 }
 
@@ -38,7 +39,7 @@ void MainWindow::startNewGame()
 
 }
 
-void MainWindow::startExistingGame()
+/*void MainWindow::startExistingGame()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                     workdir,
@@ -49,7 +50,7 @@ void MainWindow::startExistingGame()
         workdir = info.absoluteDir().absolutePath();
         //loadGame(read_file2(fileName), symbolforlivecell);
     }
-}
+}*/
 
 void MainWindow::openSettings()
 {

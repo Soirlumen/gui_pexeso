@@ -19,32 +19,23 @@ Pexeso::Pexeso(std::vector<Plr> _p, Gameboard _g) : players(_p), Gme(_g), round(
 
 bool Pexeso::oneTurn(Plr &_player, const int first_card, const int second_card)
 {
-    if (first_card == second_card)
-    {
-        std::cout << "nemuzes odkryt jedno a to samo policko bruh\n";
+    if (first_card == second_card) {
+        std::cout << "Nemuzes odkryt jednu a tu stejnou kartu\n";
         return false;
     }
 
-    if (!(getGme().getDeck()[first_card].isVisible()) && !(getGme().getDeck()[second_card].isVisible()))
-    {
-        getGme().getDeck()[first_card].flipCard();
-        getGme().getDeck()[second_card].flipCard();
-        if (getGme().getDeck()[first_card].getId() == getGme().getDeck()[second_card].getId())
-        {
-            _player.addScore();
-            std::cout << "mas bod! Nyni mas "<< _player.getScore()<< "bodu\n";
-        }
-        else
-        {
-            getGme().getDeck()[first_card].flipCard();
-            getGme().getDeck()[second_card].flipCard();
-            std::cout << "nemas bod!\n";
-        }
-        return true;
+    auto &deckRef = getGme().getDeck();
+
+    // Shoda ID
+    if (deckRef[first_card].getId() == deckRef[second_card].getId()) {
+        _player.addScore();
+        std::cout << "Mas bod! Nyni mas " << _player.getScore() << " bodu\n";
+        return true;  // shoda
     }
-    std::cout << "policko je uz odkryte, zkus to znovu:3";
-    return false;
+
+    return false;  // neshoda
 }
+
 
 void Pexeso::oneRound()
 {
@@ -100,7 +91,7 @@ unsigned int Pexeso::getRound() const
 }
 
 int Pexeso::getACardIndex() const
-{
+{/*
     while (true)
     {
         int pom;
@@ -133,7 +124,9 @@ int Pexeso::getACardIndex() const
             continue;
         }
         return pom;
-    }
+    }*/
+    // vrátí -1 jen pokud hráč klikne na quit tlačítko
+    return -1; // placeholder
 }
 void Pexeso::showResults() const
 {
