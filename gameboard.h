@@ -9,8 +9,12 @@
 #include <stdexcept>
 #include <algorithm>
 #include "Card.h"
-#include <QString>
 #include <ostream>
+
+#include <QString>
+#include <QDir>
+#include <QFileInfo>
+
 //typedef std::string Str; // konzolova verze
 typedef QString Str; //qt verze xd
 typedef std::vector<Str> vector_of_pics_names;
