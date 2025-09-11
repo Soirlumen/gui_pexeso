@@ -25,9 +25,6 @@ Gameboard::Gameboard(const QStringList &_wo, unsigned int _nop)
 
     number_of_pairs = std::min<unsigned int>(number_of_pairs, files.size());
 
-    // zamíchat
-    std::shuffle(files.begin(), files.end(), std::mt19937{std::random_device{}()});
-    files.resize(number_of_pairs);
 
     dEck.clear();
     dEck.reserve(number_of_pairs * 2);
@@ -37,7 +34,10 @@ Gameboard::Gameboard(const QStringList &_wo, unsigned int _nop)
     }
 
     // shuffle decku
-    std::shuffle(dEck.begin(), dEck.end(), std::mt19937{std::random_device{}()});
+    static std::random_device rd;
+    static std::mt19937 g(rd());
+
+    std::shuffle(dEck.begin(), dEck.end(), g);
 }
 
 
