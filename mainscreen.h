@@ -5,27 +5,29 @@
 
 class QPushButton;
 class QVBoxLayout;
+
 class MainScreen : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
+
     QPushButton* btnStartNewGame;
-    //QPushButton* btnStartExistingGame;
+    QPushButton* btnReturnToGame;
     QPushButton* btnSettings;
     QPushButton* btnQuit;
+
     QVBoxLayout* lmaoyout;
 
 public:
     MainScreen(QWidget *parent = nullptr);
-    void setupWindow();
+    void setReturnButtonEnabled(bool enabled);
+    void setupWindow(bool hasExistingGame = false);
     void setupConnect();
-
 
 signals:
     void clickedStartNewGame();
-    //void clickedStartExistingGame();
+    void clickedReturnToGame();
     void clickedSettings();
     void clickedQuit();
-public slots:
 };
 
 #endif // MAINSCREEN_H

@@ -11,7 +11,6 @@ private:
     std::vector<Plr> players;
     Gameboard Gme;
     unsigned int round;
-    void setRound(unsigned int _nr);
 
 public:
     static constexpr int MAX_PLAYERS = 4;
@@ -26,6 +25,8 @@ public:
     std::vector<Plr> &getPlayers();
     unsigned int getRound() const;
     int getACardIndex() const;
+    void setRound(unsigned int _nr);
+
     void addRound()
     {
         setRound(getRound() + 1);

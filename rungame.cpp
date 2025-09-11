@@ -11,8 +11,8 @@
 #include <QBrush>
 #include <QPen>
 #include <QDebug>
+#include <QMessageBox>
 #include <QTimer>
-
 
 static const QStringList setOne {
     ":/baseset/pic/1.png",
@@ -49,12 +49,15 @@ void runGame::setupConnects()
     connect(btnBackToMenu, &QPushButton::clicked, this, &runGame::clickedBackToMenu);
 }
 
-void runGame::setupLayout()
+void runGame::setupMainLayout()
 {
-    // Hlavní horizontální layout
     layoutMain = new QHBoxLayout(this);
+    layoutMain->addLayout(setupLeftLayout());
+    layoutMain->addLayout(setupRightLayout());
+}
 
-    // Levý panel (menu + hráči + info)
+QVBoxLayout* runGame::setupLeftLayout()
+{
     layoutLeft = new QVBoxLayout();
     btnBackToMenu = new QPushButton(tr("Back to menu"));
     layoutLeft->addWidget(btnBackToMenu);
@@ -62,8 +65,19 @@ void runGame::setupLayout()
     lblplayerAndScore = new QLabel(tr("players | score"));
     layoutLeft->addWidget(lblplayerAndScore);
 
-    // Vykreslení hráčů podle pxs
-    const auto &players = pxs.getPlayers();
+    setupPlayerLabels();
+    layoutLeft->addStretch();
+    lblPlayerTurnAndRound = new QLabel(
+        tr("%1's turn | round: 0").arg(pxs->getPlayers()[0].getName())
+        );
+    layoutLeft->addWidget(lblPlayerTurnAndRound);
+
+    return layoutLeft;
+}
+
+void runGame::setupPlayerLabels()
+{
+    const auto &players = pxs->getPlayers();
     playerLabels.clear();
     for (size_t i = 0; i < players.size(); ++i) {
         QLabel *lbl = new QLabel(this);
@@ -71,52 +85,39 @@ void runGame::setupLayout()
         layoutLeft->addWidget(lbl);
         playerLabels.append(lbl);
     }
-
-    // Pokud chceš mít max 4 labely, doplníme prázdné místo
     for (size_t i = players.size(); i < 4; ++i) {
         QLabel *lbl = new QLabel(" ", this);
         layoutLeft->addWidget(lbl);
         playerLabels.append(lbl);
     }
+}
 
-    lblPlayerTurnAndRound = new QLabel(
-        tr("%1's turn | round: 0").arg(players[0].getName())
-        );
-    layoutLeft->addStretch(); // vyplní prázdný prostor
-    layoutLeft->addWidget(lblPlayerTurnAndRound);
-
-    // Pravý panel (hrací plocha + nuke button)
+QVBoxLayout* runGame::setupRightLayout()
+{
     layoutRight = new QVBoxLayout();
     view = new QGraphicsView();
     scene = new QGraphicsScene(this);
     view->setScene(scene);
 
     btnNukeEverything = new QPushButton(tr("DONT CLICK THIS OR IT BLOWS UP"));
-    layoutRight->addWidget(view, 1); // 1 = expand
+    layoutRight->addWidget(view, 1);
     layoutRight->addWidget(btnNukeEverything);
 
-    // Spojení levého a pravého panelu
-    layoutMain->addLayout(layoutLeft);
-    layoutMain->addLayout(layoutRight);
+    return layoutRight;
 }
 
 void runGame::drawPexeso()
 {
     scene->clear();
     cardItems.clear();
-    const auto &deck = pxs.getGme().getDeck();
+    const auto &deck = pxs->getGme().getDeck();
     int x = 0, y = 0;
-    const int spacing = 5;
+    const int spacing = 0;
 
     for (size_t i = 0; i < deck.size(); ++i) {
-        auto *rect = new CardItem(static_cast<int>(i));
-        rect->setRect(x, y, cardSize, cardSize);
-        rect->setBrush(deck[i].isVisible() ? Qt::white : Qt::gray);
-        rect->setPen(QPen(Qt::black));
-
+        auto *rect = createCardItem(static_cast<int>(i), x, y);
         scene->addItem(rect);
         cardItems.append(rect);
-
         connect(rect, &CardItem::clicked, this, &runGame::cardClicked);
 
         x += cardSize + spacing;
@@ -127,78 +128,99 @@ void runGame::drawPexeso()
     }
 }
 
+CardItem* runGame::createCardItem(int index, int x, int y)
+{
+    auto *rect = new CardItem(index);
+    rect->setRect(x, y, cardSize, cardSize);
+    rect->setBrush(pxs->getGme().getDeck()[index].isVisible() ? Qt::white : Qt::gray);
+    rect->setPen(QPen(Qt::black));
+    return rect;
+}
 
 void runGame::cardClicked(int index)
 {
-    auto &deck = pxs.getGme().getDeck();
-
-    // Ignorujeme klik na již odkrytou kartu nebo pokud jsme "busy"
+    auto &deck = pxs->getGme().getDeck();
     if (deck[index].isVisible() || busy) return;
 
-    // Odkryjeme kartu a aktualizujeme zobrazení
     revealCard(index);
     updateCards();
 
     if (firstSelected == -1) {
-        // První karta v páru
         firstSelected = index;
         return;
     }
 
-    // Druhá karta v páru
-    int secondSelected = index;
-    Plr &player = pxs.getPlayers()[currentPlayer];
+    handleSecondCard(index);
+}
 
-    // Zablokujeme klikání během vyhodnocení
+runGame::~runGame()
+{
+ delete pxs;
+}
+
+void runGame::handleSecondCard(int secondSelected)
+{
+    Plr &player = pxs->getPlayers()[currentPlayer];
     busy = true;
 
-    // Vyhodnotíme pár (vrací true, pokud se ID shodují)
-    bool match = pxs.oneTurn(player, firstSelected, secondSelected);
-
-    // Aktualizujeme skóre a karty
+    bool match = pxs->oneTurn(player, firstSelected, secondSelected);
     updatePlayerScores();
     updateCards();
 
     if (!match) {
-        // Pokud se karty neshodují, otočíme je zpět po 0.8s
-        int first = firstSelected;
-        int second = secondSelected;
-        QTimer::singleShot(800, this, [this, first, second]() {
-            auto &deck = pxs.getGme().getDeck();
-            deck[first].flipCard();
-            deck[second].flipCard();
-            updateCards();
-            busy = false; // odblokujeme klikání
-        });
+        handleNonMatchingCards(firstSelected, secondSelected);
     } else {
-        // Pokud je pár, karty zůstanou odkryté a body jsou přičteny
         busy = false;
     }
 
-    // Přepneme hráče a aktualizujeme label s jeho kolem
-    currentPlayer = (currentPlayer + 1) % pxs.getPlayers().size();
-    lblPlayerTurnAndRound->setText(
-        QString("%1's turn | round: %2")
-            .arg(pxs.getPlayers()[currentPlayer].getName())
-            .arg(pxs.getRound())
-        );
-
-    // Resetujeme první vybranou kartu pro další tah
+    updateGameState();
     firstSelected = -1;
-}
 
-
-void runGame::updatePlayerScores()
-{
-    for (int i = 0; i < pxs.getPlayers().size(); ++i) {
-        playerLabels[i]->setText(QString("%1 | %2").arg(pxs.getPlayers()[i].getName()).arg(pxs.getPlayers()[i].getScore()));
+    // ---- kontrola konce hry zde ----
+    if (pxs->isAllGone()) {
+        QString resultText;
+        for (const auto &p : pxs->getPlayers()) {
+            resultText += QString("%1: %2\n").arg(p.getName()).arg(p.getScore());
+        }
+        QMessageBox::information(this, tr("Game Over!"), resultText);
     }
 }
 
 
+void runGame::handleNonMatchingCards(int first, int second)
+{
+    QTimer::singleShot(800, this, [this, first, second]() {
+        auto &deck = pxs->getGme().getDeck();
+        deck[first].flipCard();
+        deck[second].flipCard();
+        updateCards();
+        busy = false;
+    });
+}
+
+void runGame::updateGameState()
+{
+    currentPlayer = (currentPlayer + 1) % pxs->getPlayers().size();
+    if (currentPlayer == 0) {
+        pxs->addRound();
+    }
+    lblPlayerTurnAndRound->setText(
+        QString("%1's turn | round: %2")
+            .arg(pxs->getPlayers()[currentPlayer].getName())
+            .arg(pxs->getRound())
+        );
+}
+
+void runGame::updatePlayerScores()
+{
+    for (int i = 0; i < pxs->getPlayers().size(); ++i) {
+        playerLabels[i]->setText(QString("%1 | %2").arg(pxs->getPlayers()[i].getName()).arg(pxs->getPlayers()[i].getScore()));
+    }
+}
+
 void runGame::revealCard(int index)
 {
-    auto &deck = pxs.getGme().getDeck();
+    auto &deck = pxs->getGme().getDeck();
     if (!deck[index].isVisible()) {
         deck[index].flipCard();
     }
@@ -206,23 +228,79 @@ void runGame::revealCard(int index)
 
 void runGame::updateCards()
 {
-    const auto &deck = pxs.getGme().getDeck();
+    const auto &deck = pxs->getGme().getDeck();
+    const int margin = 3; // tloušťka vnitřního rámečku
+
     for (int i = 0; i < cardItems.size(); ++i) {
+        CardItem *item = cardItems[i];
+
         if (deck[i].isVisible()) {
-            // Získáme cestu k obrázku podle ID karty
-            QString path = deck[i].getPicca(); // musíš mít metodu getImagePath() ve třídě Card
+            QString path = deck[i].getPicca();
             QPixmap pix(path);
-            cardItems[i]->setBrush(QBrush(pix.scaled(cardSize, cardSize))); // přizpůsobíme velikost karty
+
+            // vytvoř finální pixmapu se stejnou velikostí jako karta
+            QPixmap finalPixmap(cardSize, cardSize);
+            finalPixmap.fill(Qt::black); // černý rámeček
+
+            QPainter painter(&finalPixmap);
+            // nakresli obrázek uvnitř s marginem
+            painter.drawPixmap(margin, margin,
+                               cardSize - 2*margin,
+                               cardSize - 2*margin,
+                               pix);
+            painter.end();
+
+            item->setBrush(QBrush(finalPixmap));
         } else {
-            cardItems[i]->setBrush(Qt::gray); // zakrytá karta
+            // zakrytá karta
+            QPixmap cover(cardSize, cardSize);
+            cover.fill(Qt::black);
+            QPainter painter(&cover);
+            painter.fillRect(margin, margin, cardSize - 2*margin, cardSize - 2*margin, Qt::gray);
+            painter.end();
+            item->setBrush(QBrush(cover));
         }
     }
 }
 
-runGame::runGame(QWidget *parent)
-    : QWidget(parent), gameboard(setOne, 5), pxs({ Plr("playernbnrgj1"), Plr("player2") }, gameboard)
+bool runGame::allCardsRevealed() const
 {
-    setupLayout();
+    const auto &deck = pxs->getGme().getDeck();
+    for (const auto &card : deck) {
+        if (!card.isVisible()) return false;
+    }
+    return true;
+}
+
+
+
+runGame::runGame(QWidget *parent)
+    : QWidget(parent), gameboard(setOne, 5)
+{
+    pxs = new Pexeso({ Plr("playernbnrgj1"), Plr("player2") }, Gameboard(setOne, 5));
+    setupMainLayout();
     setupConnects();
     drawPexeso();
+}
+
+
+void runGame::resetGame()
+{
+    // odstraníme starý Pexeso objekt
+    delete pxs;
+
+    // vytvoříme nový
+    pxs = new Pexeso({ Plr("playernbnrgj1"), Plr("player2") }, Gameboard(setOne, 5));
+
+    // obnovíme GUI
+    updatePlayerScores();
+    drawPexeso();
+
+    // reset aktuálního hráče a kola
+    currentPlayer = 0;
+    lblPlayerTurnAndRound->setText(
+        QString("%1's turn | round: %2")
+            .arg(pxs->getPlayers()[currentPlayer].getName())
+            .arg(pxs->getRound())
+        );
 }

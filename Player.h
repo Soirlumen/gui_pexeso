@@ -28,6 +28,7 @@ public:
         setScore(getScore() + 1);
     }
     ~Player() {}
+    void resetScore() { score = 0; }
 };
 
 #endif

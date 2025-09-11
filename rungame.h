@@ -12,6 +12,7 @@ class QPushButton;
 class QLabel;
 class QGraphicsView;
 class QGraphicsScene;
+class CardItem;
 
 class runGame : public QWidget
 {
@@ -37,30 +38,39 @@ class runGame : public QWidget
 
     // Hra
     Gameboard gameboard;
-    Pexeso pxs;
+    Pexeso *pxs;
 
-    const int cardSize = 100;
+    const int cardSize = 150;
 
     // Stav hry
-    int firstSelected = -1;    // index první odkryté karty
-    int currentPlayer = 0;     // index hráče na tahu
-    bool busy = false;         // blokuje klikání při čekání na otočení zpět
-    QVector<CardItem*> cardItems; // reference na QGraphicsRectItem karty
+    int firstSelected = -1;
+    int currentPlayer = 0;
+    bool busy = false;
+    QVector<CardItem*> cardItems;
 
     // Interní funkce
     void setupConnects();
-    void setupLayout();
-    void redrawRightLayout();
+    void setupMainLayout();
+    QVBoxLayout* setupLeftLayout();
+    void setupPlayerLabels();
+    QVBoxLayout* setupRightLayout();
     void drawPexeso();
+    CardItem* createCardItem(int index, int x, int y);
     void updatePlayerScores();
     void revealCard(int index);
     void updateCards();
+    void handleSecondCard(int secondSelected);
+    void handleNonMatchingCards(int first, int second);
+    void updateGameState();
+    bool allCardsRevealed() const;
 
 public:
     runGame(QWidget *parent = nullptr);
-
+ void resetGame();
+    ~runGame();
 public slots:
     void cardClicked(int index);
+
 
 signals:
     void clickedBackToMenu();

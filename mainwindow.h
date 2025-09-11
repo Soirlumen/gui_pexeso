@@ -30,7 +30,7 @@ protected:
 
 public slots:
     void startNewGame();
-    //void startExistingGame();
+    void startExistingGame();
     void openSettings();
     void backToMenu();
 };
