@@ -219,8 +219,6 @@ void runGame::updateCards()
     }
 }
 
-
-
 runGame::runGame(QWidget *parent)
     : QWidget(parent), gameboard(setOne, 5), pxs({ Plr("playernbnrgj1"), Plr("player2") }, gameboard)
 {
