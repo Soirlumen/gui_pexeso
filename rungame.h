@@ -2,9 +2,10 @@
 #define RUNGAME_H
 
 #include <QWidget>
-#include <QVector>
+#include <vector>
 #include "pexeso.h"
 #include "CardItem.h"
+#include "cardSets.h"
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -18,37 +19,31 @@ class runGame : public QWidget
 {
     Q_OBJECT
 
-    // Layouty
     QHBoxLayout *layoutMain;
     QVBoxLayout *layoutLeft;
     QVBoxLayout *layoutRight;
 
-    // Levý panel – hráči
     QLabel *lblplayerAndScore;
     QLabel *lblPlayerTurnAndRound;
     QVector<QLabel*> playerLabels;
-
-    // Tlačítka
     QPushButton* btnBackToMenu;
     QPushButton* btnNukeEverything;
 
-    // Hrací plocha
     QGraphicsView *view;
     QGraphicsScene *scene;
 
-    // Hra
-    Gameboard gameboard;
     Pexeso *pxs;
+    std::vector<Plr> players;
+    QStringList cardSet;
+    unsigned int numberOfCards;
 
     const int cardSize = 150;
 
-    // Stav hry
     int firstSelected = -1;
     int currentPlayer = 0;
     bool busy = false;
     QVector<CardItem*> cardItems;
 
-    // Interní funkce
     void setupConnects();
     void setupMainLayout();
     QVBoxLayout* setupLeftLayout();
@@ -57,7 +52,7 @@ class runGame : public QWidget
     void drawPexeso();
     CardItem* createCardItem(int index, int x, int y);
     void updatePlayerScores();
-    void revealCard(int index);
+    void revealcard(int index);
     void updateCards();
     void handleSecondCard(int secondSelected);
     void handleNonMatchingCards(int first, int second);
@@ -66,6 +61,7 @@ class runGame : public QWidget
 
 public:
     runGame(QWidget *parent = nullptr);
+    runGame(QStringList _cardSet, std::vector<Plr> _plrs={Plr("playernbnrgj1"), Plr("player2")},  unsigned int _numberOfCards=5,QWidget *parent = nullptr);
  void resetGame();
     ~runGame();
 public slots:

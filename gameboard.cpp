@@ -11,6 +11,8 @@ unsigned int Gameboard::getNumberOfPairs() const
     return number_of_pairs;
 }
 
+
+// qt verze
 Gameboard::Gameboard(const QStringList &_wo, unsigned int _nop)
     : where_obraski(""), number_of_pairs(_nop)
 {
@@ -41,7 +43,7 @@ Gameboard::Gameboard(const QStringList &_wo, unsigned int _nop)
 }
 
 
-
+// Původní verze
 Gameboard::Gameboard(const Str &_wo, unsigned int _nop)
     : where_obraski(_wo), number_of_pairs(_nop)
 {

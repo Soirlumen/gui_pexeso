@@ -19,6 +19,7 @@ class MainScreen : public QWidget
 
 public:
     MainScreen(QWidget *parent = nullptr);
+    void setNewGameButtonEnabled(bool enabled);
     void setReturnButtonEnabled(bool enabled);
     void setupWindow(bool hasExistingGame = false);
     void setupConnect();

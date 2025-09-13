@@ -34,14 +34,29 @@ void MainWindow::setupThingy()
 }
 
 void MainWindow::startNewGame()
-{    rGame->resetGame(); // pokud máš metodu pro reset hry
+{
+    if (!settingsReady) {
+        QMessageBox::warning(this, "Chyba", "Nejdřív nastav hru v Nastavení!");
+        return;
+    }
 
-    // přepnutí na hru
-    stack->setCurrentIndex(1);
+    // smažeme starou hru
+    if (rGame) {
+        stack->removeWidget(rGame);
+        delete rGame;
+        rGame = nullptr;
+    }
 
-    // aktivace Return tlačítka
+    // vytvoříme novou hru podle uložených parametrů
+    rGame = new runGame(pendingCardSet, pendingPlayers, pendingNumCards, this);
+    stack->addWidget(rGame);
+
+    connect(rGame, &runGame::clickedBackToMenu, this, &MainWindow::backToMenu);
+
+    stack->setCurrentWidget(rGame);
     mscreen->setReturnButtonEnabled(true);
 }
+
 void MainWindow::startExistingGame()
 {
  stack->setCurrentIndex(1);
@@ -50,8 +65,18 @@ void MainWindow::startExistingGame()
 
 void MainWindow::openSettings()
 {
+    dlgSetting dlg(4, 0, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        pendingPlayers = dlg.getPlayersName();
+        pendingCardSet = dlg.getCardSet();
+        pendingNumCards = dlg.getNumberOfCards();
+        settingsReady = true;
 
+        // povolíme tlačítko "Nová hra"
+        mscreen->setNewGameButtonEnabled(true);
+    }
 }
+
 
 void MainWindow::backToMenu()
 {
