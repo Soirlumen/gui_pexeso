@@ -20,7 +20,7 @@ signals:
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override {
         emit clicked(index);
-        QGraphicsRectItem::mousePressEvent(event); // zavoláme základní
+        QGraphicsRectItem::mousePressEvent(event);
     }
 };
 

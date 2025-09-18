@@ -100,7 +100,7 @@ void runGame::drawPexeso()
 
 CardItem* runGame::createCardItem(int index, int x, int y)
 {
-    auto *rect = new CardItem(index);
+    CardItem *rect = new CardItem(index);
     rect->setRect(x, y, cardSize, cardSize);
     rect->setBrush(pxs->getGme().getDeck()[index].isVisible() ? Qt::white : Qt::gray);
     rect->setPen(QPen(Qt::black));
@@ -199,7 +199,8 @@ void runGame::revealcard(int index)
 void runGame::updateCards()
 {
     const auto &deck = pxs->getGme().getDeck();
-    const int margin = 3; // tloušťka vnitřního rámečku
+    // tloušťka vnitřního rámečku
+    const int margin = 3;
 
     for (int i = 0; i < cardItems.size(); ++i) {
         CardItem *item = cardItems[i];
@@ -210,7 +211,8 @@ void runGame::updateCards()
 
             // vytvoř finální pixmapu se stejnou velikostí jako karta
             QPixmap finalPixmap(cardSize, cardSize);
-            finalPixmap.fill(Qt::black); // černý rámeček
+            // černý rámeček
+            finalPixmap.fill(Qt::black);
 
             QPainter painter(&finalPixmap);
             // nakresli obrázek uvnitř s marginem
